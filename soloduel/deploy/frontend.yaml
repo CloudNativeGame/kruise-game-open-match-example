@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: open-match-demo
+    component: demo
+    release: open-match-demo
+  name: om-demo
+  namespace: open-match-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-match-demo
+      component: demo
+  template:
+    metadata:
+      labels:
+        app: open-match-demo
+        component: demo
+        release: open-match-demo
+      namespace: open-match-demo
+    spec:
+      containers:
+        - image: registry.cn-hangzhou.aliyuncs.com/acs/openmatch-demo-first-match:1.7.0
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 51507
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: om-demo
+          ports:
+            - containerPort: 51507
+              name: http
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /healthz?readiness=true
+              port: 51507
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: open-match-demo
+    component: demo
+    release: open-match-demo
+  name: om-demo
+  namespace: open-match-demo
+spec:
+  ports:
+    - name: http
+      port: 51507
+      protocol: TCP
+      targetPort: 51507
+  selector:
+    app: open-match-demo
+    component: demo
+  type: ClusterIP
