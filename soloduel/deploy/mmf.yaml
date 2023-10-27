@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: open-match-customize
+    component: matchfunction
+    release: open-match-demo
+  name: om-function
+  namespace: open-match-demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: open-match-customize
+      component: matchfunction
+  template:
+    metadata:
+      labels:
+        app: open-match-customize
+        component: matchfunction
+        release: open-match-demo
+      namespace: open-match-demo
+    spec:
+      containers:
+        - image: registry.cn-hangzhou.aliyuncs.com/acs/openmatch-mmf-go-soloduel:1.7.0
+          imagePullPolicy: Always
+          name: om-function
+          ports:
+            - containerPort: 50502
+              name: grpc
+              protocol: TCP
+            - containerPort: 51502
+              name: http
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: open-match-customize
+    component: matchfunction
+    release: open-match-demo
+  name: om-function
+  namespace: open-match-demo
+spec:
+  clusterIP: None
+  clusterIPs:
+    - None
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: grpc
+      port: 50502
+      protocol: TCP
+      targetPort: 50502
+    - name: http
+      port: 51502
+      protocol: TCP
+      targetPort: 51502
+  selector:
+    app: open-match-customize
+    component: matchfunction
+    release: open-match-demo
+  sessionAffinity: None
+  type: ClusterIP

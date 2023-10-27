@@ -1,0 +1,22 @@
+apiVersion: game.kruise.io/v1alpha1
+kind: GameServerSet
+metadata:
+  name: flappy-bird
+  namespace: default
+spec:
+  replicas: 5
+  updateStrategy:
+    rollingUpdate:
+      podUpdatePolicy: InPlaceIfPossible
+  gameServerTemplate:
+    spec:
+      containers:
+        - image: registry.cn-beijing.aliyuncs.com/chrisliu95/flappy-bird:0.1
+          name: flappy-bird
+  network:
+    networkType: AlibabaCloud-SLB
+    networkConf:
+      - name: SlbIds
+        value: lb-xxx # fill in your slb id
+      - name: PortProtocols
+        value: 8000/TCP
