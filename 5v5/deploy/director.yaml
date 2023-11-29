@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: kruise-game-open-match-director
+  name: kruise-game-open-match-director
+  namespace: open-match
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kruise-game-open-match-director
+  template:
+    metadata:
+      labels:
+        app: kruise-game-open-match-director
+    spec:
+      containers:
+        - command:
+          - /director
+          - --game-server-label-selector=flappy-bird
+          - --profile-name=default
+          - --lease-lock-name=kruise-game-open-match-director
+          - --lease-lock-namespace=open-match
+          - --match-function-endpoint=match-function-5v5.open-match.svc.cluster.local
+          - --match-function-port=50502
+          - --gss-names=flappy-bird
+          image: registry.cn-beijing.aliyuncs.com/chrisliu95/kruise-game-open-match-director:1.0
+          imagePullPolicy: Always
+          name: kruise-game-open-match-director
+      serviceAccountName: kruise-game-open-match-director-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kruise-game-open-match-director-role
+rules:
+  - apiGroups:
+      - game.kruise.io
+    resources:
+      - gameservers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - game.kruise.io
+    resources:
+      - gameservers/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kruise-game-open-match-director-sa
+  namespace: open-match
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kruise-game-open-match-director-rolebinding
+  namespace: open-match
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kruise-game-open-match-director-role
+subjects:
+  - kind: ServiceAccount
+    name: kruise-game-open-match-director-sa
+    namespace: open-match
