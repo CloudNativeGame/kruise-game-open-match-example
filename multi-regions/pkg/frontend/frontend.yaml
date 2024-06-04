@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend-multi-regions
+  namespace: open-match
+spec:
+  containers:
+  - name: frontend-5v5
+    image: registry.cn-beijing.aliyuncs.com/chrisliu95/frontend-multi-regions:test
+    imagePullPolicy: Always
